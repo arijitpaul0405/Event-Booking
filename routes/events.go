@@ -52,8 +52,10 @@ func createEvent(context *gin.Context) {
 	context.JSON(http.StatusCreated, gin.H{"message": "Event Created!", "event": event})
 }
 
-func getEvent(context *gin.Context)  {
+func getEvent(context *gin.Context) {
 	event_id, err := strconv.ParseInt(context.Param("id"), 10, 64)
+
+	userid := context.GetInt64("userId")
 
 	if err != nil {
 		err_msg := "Error: Could not parse event id from request! Please check your input."
@@ -63,12 +65,12 @@ func getEvent(context *gin.Context)  {
 	}
 
 	var event *models.Event
-	event, err = models.GetEventByID(event_id)
+	event, err = models.GetEventByID(event_id, userid)
 
 	if err != nil {
-		err_msg := fmt.Sprintf("Error: Could not retrieve event with id %v!", event_id)
+		err_msg := fmt.Sprintf("Not Found: Event with id %v not found!", event_id)
 		fmt.Printf("%v %v\n", err_msg, err)
-		context.JSON(http.StatusInternalServerError, gin.H{"error": err_msg})
+		context.JSON(http.StatusNotFound, gin.H{"message": err_msg})
 		return
 	}
 
@@ -87,12 +89,15 @@ func updateEvent(context *gin.Context) {
 		return
 	}
 
-	retrieved_event, err := models.GetEventByID(event_id)
+	user_id := context.GetInt64("userId")
+
+	var retrieved_event *models.Event
+	retrieved_event, err = models.GetEventByID(user_id, event_id)
 
 	if err != nil {
-		err_msg := fmt.Sprintf("Error: Could not retrieve event with id %v!", event_id)
+		err_msg := fmt.Sprintf("Not Found: Event with id %v not found!", event_id)
 		fmt.Printf("%v %v\n", err_msg, err)
-		context.JSON(http.StatusInternalServerError, gin.H{"error": err_msg})
+		context.JSON(http.StatusNotFound, gin.H{"message": err_msg})
 		return
 	}
 
@@ -131,7 +136,7 @@ func updateEvent(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"message": success_msg})
 }
 
-func deleteEvent(context *gin.Context)  {
+func deleteEvent(context *gin.Context) {
 	event_id, err := strconv.ParseInt(context.Param("id"), 10, 64)
 
 	if err != nil {
@@ -141,13 +146,15 @@ func deleteEvent(context *gin.Context)  {
 		return
 	}
 
+	user_id := context.GetInt64("userId")
+
 	var retrieved_event *models.Event
-	retrieved_event, err = models.GetEventByID(event_id)
+	retrieved_event, err = models.GetEventByID(event_id, user_id)
 
 	if err != nil {
-		err_msg := fmt.Sprintf("Error: Could not retrieve event with id %v!", event_id)
+		err_msg := fmt.Sprintf("Not Found: Event with id %v not found!", event_id)
 		fmt.Printf("%v %v\n", err_msg, err)
-		context.JSON(http.StatusInternalServerError, gin.H{"error": err_msg})
+		context.JSON(http.StatusNotFound, gin.H{"message": err_msg})
 		return
 	}
 
@@ -173,9 +180,9 @@ func deleteEvent(context *gin.Context)  {
 	context.JSON(http.StatusOK, gin.H{"message": success_msg})
 }
 
-func registerEvent(context *gin.Context)  {
+func registerEvent(context *gin.Context) {
 	event_id, err := strconv.ParseInt(context.Param("id"), 10, 64)
-	
+
 	if err != nil {
 		err_msg := "Error: Could not parse event id from request! Please check your input."
 		fmt.Printf("%v %v\n", err_msg, err)
@@ -184,9 +191,9 @@ func registerEvent(context *gin.Context)  {
 	}
 
 	user_id := context.GetInt64("userId")
-	
+
 	var retrieved_event *models.Event
-	retrieved_event, err = models.GetEventByID(event_id)
+	retrieved_event, err = models.GetEventByID(event_id, user_id)
 
 	if err != nil {
 		err_msg := "Event does not exists!"
@@ -219,7 +226,7 @@ func registerEvent(context *gin.Context)  {
 	context.JSON(http.StatusCreated, gin.H{"message": success_msg, "registeration_id": registeration_id})
 }
 
-func getRegistrationByID(context * gin.Context) {
+func getRegistrationByID(context *gin.Context) {
 	event_id, err := strconv.ParseInt(context.Param("id"), 10, 64)
 
 	if err != nil {
@@ -228,7 +235,7 @@ func getRegistrationByID(context * gin.Context) {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err_msg})
 		return
 	}
-	
+
 	user_id := context.GetInt64("userId")
 
 	var registered_event *models.RegisteredEvent
@@ -246,7 +253,7 @@ func getRegistrationByID(context * gin.Context) {
 	context.JSON(http.StatusNotFound, gin.H{"message": success_msg, "registered_event": registered_event})
 }
 
-func cancelEvent(context *gin.Context)  {
+func cancelEvent(context *gin.Context) {
 	registeration_id, err := strconv.ParseInt(context.Param("id"), 10, 64)
 
 	if err != nil {
