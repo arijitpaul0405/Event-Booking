@@ -46,9 +46,9 @@ func (e *Event) Save() error {
 	return err
 }
 
-func GetAllEvents() (*[]Event, error) {
-	query := `SELECT * FROM events`
-	rows, err := db.DB.Query(query)
+func GetAllEvents(userid int64) (*[]Event, error) {
+	query := `SELECT * FROM events WHERE user_id = ?`
+	rows, err := db.DB.Query(query, userid)
 
 	if err != nil {
 		return nil, err

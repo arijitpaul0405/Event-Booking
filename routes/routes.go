@@ -6,15 +6,15 @@ import (
 )
 
 func RegisterRoutes(server *gin.Engine)  {
-	// Get all events
-	server.GET("/events", getEvents)
-
-	// Get a specific event by id
-	server.GET("/events/:id", getEvent)
-
 	// Create server gruop to add authentication in middleware
 	authenticated := server.Group("/")
 	authenticated.Use(middleware.Authenticate)
+
+	// Get all events
+	authenticated.GET("/events", getEvents)
+
+	// Get a specific event by id
+	authenticated.GET("/events/:id", getEvent)
 
 	// Create a new event
 	authenticated.POST("/events", createEvent)

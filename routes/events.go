@@ -11,7 +11,9 @@ import (
 )
 
 func getEvents(context *gin.Context) {
-	events, err := models.GetAllEvents()
+	userId := context.GetInt64("userId")
+
+	events, err := models.GetAllEvents(userId)
 
 	if err != nil {
 		err_msg := "Error: Could not retrieve events!"

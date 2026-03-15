@@ -1,2 +1,0 @@
-GET http://localhost:8000/events/2/register
-Authorization: <TOKEN>
