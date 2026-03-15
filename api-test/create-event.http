@@ -1,0 +1,10 @@
+POST http://localhost:8000/events
+Content-Type: application/json
+Authorization: <TOKEN>
+
+{
+  "name": "<event-name>",
+  "description": "<event-description>",
+  "location": "<location>",
+  "dateTime": "<datetime>"
+}
