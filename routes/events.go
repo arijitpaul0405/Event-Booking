@@ -227,30 +227,21 @@ func registerEvent(context *gin.Context) {
 }
 
 func getRegistrationByID(context *gin.Context) {
-	event_id, err := strconv.ParseInt(context.Param("id"), 10, 64)
-
-	if err != nil {
-		err_msg := "Error: Could not parse event id from request! Please check your input."
-		fmt.Printf("%v %v\n", err_msg, err)
-		context.JSON(http.StatusBadRequest, gin.H{"error": err_msg})
-		return
-	}
-
 	user_id := context.GetInt64("userId")
 
-	var registered_event *models.RegisteredEvent
-	registered_event, err = models.GetRegistrationByEventID_UserID(event_id, user_id)
+	var registered_event *[]models.ResultRegisteredEvent
+	registered_event, err := models.GetRegistrationByUserID(user_id)
 
 	if err != nil {
-		err_msg := fmt.Sprintf("Could not find registeration with event id %v!", event_id)
+		err_msg := "Could not find registeration for the given user!"
 		fmt.Printf("%v %v\n", err_msg, err)
-		context.JSON(http.StatusNotFound, gin.H{"error": err_msg})
+		context.JSON(http.StatusNotFound, gin.H{"message": err_msg})
 		return
 	}
 
-	success_msg := fmt.Sprintf("Successfully retrieved registration with event id %v", event_id)
+	success_msg := "Successfully retrieved registration for the given user!"
 	fmt.Println(success_msg)
-	context.JSON(http.StatusNotFound, gin.H{"message": success_msg, "registered_event": registered_event})
+	context.JSON(http.StatusOK, gin.H{"message": success_msg, "registered_event": registered_event})
 }
 
 func cancelEvent(context *gin.Context) {

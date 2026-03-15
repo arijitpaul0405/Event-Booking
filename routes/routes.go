@@ -29,7 +29,7 @@ func RegisterRoutes(server *gin.Engine)  {
 	authenticated.POST("/events/:id/register", registerEvent)
 
 	// Get registered event by id
-	authenticated.GET("/events/:id/register", getRegistrationByID)
+	authenticated.GET("/events/register", getRegistrationByID)
 
 	// Cancel an event
 	authenticated.DELETE("/events/:id/register", cancelEvent)

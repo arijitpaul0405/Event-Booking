@@ -18,9 +18,18 @@ type Event struct {
 }
 
 type RegisteredEvent struct {
-	ID int64
+	ID 		int64
 	EventID int64
-	UserID int64
+	UserID 	int64
+}
+
+type ResultRegisteredEvent struct {
+	EventID 	int64
+	UserID 		int64
+	Name        string
+	Description string
+	Location    string
+	DateTime    time.Time
 }
 
 func (e *Event) Save() error {
@@ -145,8 +154,13 @@ func (e *Event) Register(user_id int64) (int64, error) {
 	return registeration_id, err
 }
 
-func GetRegistrationByEventID_UserID(event_id, user_id int64) (*RegisteredEvent, error) {
-	query := "SELECT * FROM registrations WHERE event_id = ? AND user_id = ?"
+func GetRegistrationByUserID(user_id int64) (*[]ResultRegisteredEvent, error) {
+	query := `
+	SELECT r.event_id, r.user_id, e.name, e.description, e.location, e.datetime
+	FROM registrations r
+	INNER JOIN events e ON r.event_id = e.id
+	WHERE r.user_id = ?
+	`
 	stmt, err := db.DB.Prepare(query)
 
 	if err != nil {
@@ -155,17 +169,28 @@ func GetRegistrationByEventID_UserID(event_id, user_id int64) (*RegisteredEvent,
 
 	defer stmt.Close()
 
-	var registered_event RegisteredEvent
-	row := stmt.QueryRow(event_id, user_id)
-	err = row.Scan(
-		&registered_event.ID, &registered_event.EventID, &registered_event.UserID,
-	)
+	rows, err := stmt.Query(user_id)
 
 	if err != nil {
 		return nil, err
 	}
-	
-	return &registered_event, nil
+
+	var registered_events = []ResultRegisteredEvent{}
+	var registered_event = ResultRegisteredEvent{}
+	for rows.Next() {
+		err = rows.Scan(
+			&registered_event.EventID, &registered_event.UserID, 
+			&registered_event.Name, &registered_event.Description,
+			&registered_event.Location, &registered_event.DateTime,
+		)
+		registered_events = append(registered_events, registered_event)
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &registered_events, nil
 }
 
 func GetRegistrationByID(registeration_id int64) (*RegisteredEvent, error) {
@@ -187,7 +212,7 @@ func GetRegistrationByID(registeration_id int64) (*RegisteredEvent, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return &registered_event, nil
 }
 
